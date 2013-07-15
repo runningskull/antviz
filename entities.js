@@ -59,11 +59,11 @@ function Entity(two, options, defaults) {
   this.speed = this._.speed || 1
 }
 
-Entity.prototype.tick = function() {
-  this._update()
+Entity.prototype.tick = function(tick) {
+  this._update(tick)
 }
 
-Entity.prototype._update = function() { 
+Entity.prototype._update = function(tick) { 
   this.velocity = this.velocity.normalize()
   this.position.x += this.velocity.x * this.speed
   this.position.y += this.velocity.y * this.speed
@@ -83,6 +83,7 @@ Entity.prototype._calculateRotation = function() {
 
 //~~
 
+
 function Ant(two, options) {
   Ant.super_.call(this, two, options, {
      size: 14
@@ -96,6 +97,7 @@ asTri.call(Ant)
 
 //~~
 
+
 function Food(two, options) {
   Food.super_.call(this, two, options, {
      size: 1
@@ -107,11 +109,12 @@ asSquare.call(Food)
 
 //~~
 
+
 function Pheremone(two, options) {
   Pheremone.super_.call(this, two, options, {
      maxStrength: 100
     ,strength: 100
-    ,evaporationRate: 0.1
+    ,lifetime: 2000
  
     ,size: 50
     ,fill: '#f2f2e8'
@@ -119,17 +122,18 @@ function Pheremone(two, options) {
   })
 
   this.strength = this._.strength
+  this._evaporationRate = 100 / this._.lifetime // per millisecond
 }
 util.inherits(Pheremone, Entity)
 asCircle.call(Pheremone)
 
 Pheremone.prototype._update = function(tick) {
   Pheremone.super_.prototype._update.call(this, tick)
-  this._evaporate()
+  this._evaporate(tick)
 }
 
 Pheremone.prototype._evaporate = function(tick) {
-  this.strength -= this._.evaporationRate
+  this.strength -= this._evaporationRate * (tick || 1)
 
   this.shape.opacity = 1 - ((this._.maxStrength - this.strength) / this._.maxStrength);
   this.shape.opacity > 0 || (this.shape.opacity = 0)

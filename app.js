@@ -18,7 +18,7 @@ scent.draw()
 
 
 
-two.bind('update', function(tick) {
+two.bind('update', function(frameCount, tick) {
   shiner.tick(tick)
   scent.tick(tick)
 }).play()
