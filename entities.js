@@ -32,7 +32,7 @@ function asCircle() {
 function asTri() {
   this.prototype.draw = function() {
     var p = this.position
-      , radius = SIZE / 2
+      , radius = this._.size / 2
 
     this.shape = this.two.makePolygon(p.x, p.y,
                                       p.x - radius, p.y - radius/2,
@@ -52,14 +52,16 @@ function asTri() {
 
 function Entity(two, options, defaults) {
   this.two = two
-  this._ = _.defaults(options, defaults)
+  this._ = _.defaults(options||{}, defaults)
 
   this.position = this._.position || new Vector(0, 0)
   this.velocity = this._.velocity || new Vector(0, 0)
   this.speed = this._.speed || 1
 }
 
-Entity.prototype.tick = function(){}
+Entity.prototype.tick = function() {
+  this._update()
+}
 
 Entity.prototype._update = function() { 
   this.velocity = this.velocity.normalize()
@@ -71,7 +73,9 @@ Entity.prototype._update = function() {
 }
 
 Entity.prototype._calculateRotation = function() {
-  var angle = Math.atan(velocity.y, velocity.x)
+  var velocity = this.velocity
+    , angle = Math.atan(velocity.y, velocity.x)
+
   angle < -Math.PI && (angle = angle + PI2)
   if (velocity.x < 0) { angle = Math.PI - angle }
   return angle
@@ -81,16 +85,14 @@ Entity.prototype._calculateRotation = function() {
 
 function Ant(two, options) {
   Ant.super_.call(this, two, options, {
-     size: 200
+     size: 14
     ,fill: '#555555'
     ,stroke: '#111111'
+    ,position: new Vector(10, 10)
   })
 }
 util.inherits(Ant, Entity)
-asSquare.call(Ant)
-
-Ant.prototype.tick = function() {
-}
+asTri.call(Ant)
 
 //~~
 
@@ -107,16 +109,30 @@ asSquare.call(Food)
 
 function Pheremone(two, options) {
   Pheremone.super_.call(this, two, options, {
+     maxStrength: 100
+    ,strength: 100
+    ,evaporationRate: 0.1
+ 
+    ,size: 50
+    ,fill: '#f2f2e8'
+    ,position: new Vector(100, 100)
   })
+
+  this.strength = this._.strength
 }
 util.inherits(Pheremone, Entity)
 asCircle.call(Pheremone)
 
-Pheremone.prototype.update = function(tick) {
+Pheremone.prototype._update = function(tick) {
+  Pheremone.super_.prototype._update.call(this, tick)
+  this._evaporate()
 }
 
 Pheremone.prototype._evaporate = function(tick) {
-  this.strength -= this.evaporationRate
+  this.strength -= this._.evaporationRate
+
+  this.shape.opacity = 1 - ((this._.maxStrength - this.strength) / this._.maxStrength);
+  this.shape.opacity > 0 || (this.shape.opacity = 0)
 }
 
 

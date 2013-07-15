@@ -11,11 +11,16 @@ window.shiner = new Ant(two, {
   meat: 'mouth'
 })
 
+window.scent = new Pheremone(two)
+
 shiner.draw()
+scent.draw()
 
 
 
-two.bind('update', function() {
+two.bind('update', function(tick) {
+  shiner.tick(tick)
+  scent.tick(tick)
 }).play()
 
 
